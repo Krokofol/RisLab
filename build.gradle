@@ -1,0 +1,27 @@
+plugins {
+    id 'org.jetbrains.kotlin.jvm' version '1.5.31'
+}
+
+group 'com.krokofol'
+version '1.0'
+
+repositories {
+    mavenCentral()
+}
+
+ext {
+    versions = [
+            log4j   :     "2.17.1",
+            cli     :     "1.5.0",
+    ]
+}
+
+dependencies {
+    // https://mvnrepository.com/artifact/org.apache.logging.log4j/log4j
+    implementation "org.apache.logging.log4j:log4j:${versions.log4j}"
+
+    // https://mvnrepository.com/artifact/commons-cli/commons-cli
+    implementation "commons-cli:commons-cli:${versions.cli}"
+
+    implementation "org.jetbrains.kotlin:kotlin-stdlib"
+}
