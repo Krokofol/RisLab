@@ -11,14 +11,18 @@ repositories {
 
 ext {
     versions = [
-            log4j   :     "2.17.1",
-            cli     :     "1.5.0",
+            log4j   :  "2.17.1",
+            cli     :  "1.5.0",
+            compress:  "1.21"
     ]
 }
 
 dependencies {
     // https://mvnrepository.com/artifact/org.apache.logging.log4j/log4j
     implementation "org.apache.logging.log4j:log4j:${versions.log4j}"
+
+    // https://mvnrepository.com/artifact/org.apache.commons/commons-compress
+    implementation "org.apache.commons:commons-compress:${versions.compress}"
 
     // https://mvnrepository.com/artifact/commons-cli/commons-cli
     implementation "commons-cli:commons-cli:${versions.cli}"

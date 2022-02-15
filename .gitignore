@@ -11,7 +11,8 @@ application-custom.yml
 local.properties
 *.iml
 *.log
-RU-NVS.osm.bz2
+input.bz2
+output.xml
 
 # Compiled class file
 *.class
