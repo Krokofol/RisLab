@@ -60,7 +60,7 @@ object LabStarter {
     private fun getWriter(commandLine: CommandLine): BufferedWriter {
         val file = File(commandLine.getOptionValue("o", DEFAULT_OUTPUT_FILE_NAME))
         val fileWriter = FileWriter(file)
-        return BufferedWriter(fileWriter, 32 * 100)
+        return BufferedWriter(fileWriter, CHAR_SIZE * DEFAULT_BUFFER_LENGTH)
     }
 
     private fun getNumberOfSymbolsToRead(commandLine: CommandLine): Int {
