@@ -3,39 +3,53 @@ package com.krokofol.lab
 import org.apache.commons.cli.CommandLine
 import org.apache.commons.cli.DefaultParser
 import org.apache.commons.cli.Options
+import org.apache.commons.compress.compressors.CompressorInputStream
 import org.apache.commons.compress.compressors.CompressorStreamFactory
 import java.io.*
-import java.lang.RuntimeException
 import javax.xml.stream.XMLEventReader
 import javax.xml.stream.XMLInputFactory
+import javax.xml.stream.events.Attribute
 import kotlin.RuntimeException
 
 object LabStarter {
     private const val DEFAULT_INPUT_FILE_NAME = "input.bz2"
     private const val DEFAULT_OUTPUT_FILE_NAME = "output.xml"
-    private const val DEFAULT_NUMBER_OF_SYMBOLS_TO_READ = "10000"
+    private const val DEFAULT_NUMBER_OF_SYMBOLS_TO_READ = "1000000"
     private const val DEFAULT_BUFFER_LENGTH = 100
     private const val CHAR_SIZE = 32
 
     fun start(args: Array<String>) {
         val commandLine = createCommandLine(args)
-        val reader = getReader(commandLine)
+        val inputStream = getBufferedInputStream(commandLine)
+        val xmlReader = getXmlReader(inputStream)
         val writer = getWriter(commandLine)
         val numberOfSymbolsToRead = getNumberOfSymbolsToRead(commandLine)
 
-        while (reader.hasNext()) {
-            val event = reader.nextEvent()
+        val eventsPerUser = mutableMapOf<String, Int>()
+
+        while (xmlReader.hasNext() && numberOfSymbolsToRead > inputStream.bytesRead) {
+            val event = xmlReader.nextEvent()
             if (event.isStartElement && event.asStartElement().name.localPart == "node") {
-                val startEvent = event.asStartElement()
-                val attributes = startEvent.attributes
+                val userName = getUserName(event.asStartElement().attributes as Iterator<Attribute>)
+                eventsPerUser.compute(userName) { _, value ->
+                    value?.let { it + 1 } ?: 1
+                }
             }
+        }
+
+        for (userData in eventsPerUser) {
+            writer.write("${userData.key} has ${userData.value} nodes\n")
+            writer.flush()
         }
     }
 
-    private fun getReader(commandLine: CommandLine): XMLEventReader {
+    private fun getBufferedInputStream(commandLine: CommandLine): CompressorInputStream {
         val fileInputStream = FileInputStream(commandLine.getOptionValue("i", DEFAULT_INPUT_FILE_NAME))
         val bufferedInputStream = BufferedInputStream(fileInputStream, CHAR_SIZE * DEFAULT_BUFFER_LENGTH)
-        val input = CompressorStreamFactory().createCompressorInputStream(bufferedInputStream)
+        return CompressorStreamFactory().createCompressorInputStream(bufferedInputStream)
+    }
+
+    private fun getXmlReader(input: CompressorInputStream): XMLEventReader {
         return XMLInputFactory.newInstance().createXMLEventReader(input)
             ?: throw RuntimeException("failed to create reader of xml file")
     }
@@ -58,6 +72,15 @@ object LabStarter {
         options.addOption("n", "number", true, "number of symbols to read")
         val commandLineParser = DefaultParser()
         return commandLineParser.parse(options, args)
+    }
+
+    private fun getUserName(attributes: Iterator<Attribute>): String {
+        for (attribute in attributes) {
+            if (attribute.name.localPart == "user") {
+                return attribute.value
+            }
+        }
+        throw RuntimeException("attribute name was not found in node")
     }
 }
 
