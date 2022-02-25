@@ -26,6 +26,7 @@ object LabStarter {
         val numberOfSymbolsToRead = getNumberOfSymbolsToRead(commandLine)
 
         val eventsPerUser = mutableMapOf<String, Int>()
+        var nodesAmount = 0
 
         while (xmlReader.hasNext() && numberOfSymbolsToRead > inputStream.bytesRead) {
             val event = xmlReader.nextEvent()
@@ -34,13 +35,15 @@ object LabStarter {
                 eventsPerUser.compute(userName) { _, value ->
                     value?.let { it + 1 } ?: 1
                 }
+                nodesAmount++
             }
         }
 
+        writer.write("nodes amount - $nodesAmount\n")
         for (userData in eventsPerUser) {
-            writer.write("${userData.key} has ${userData.value} nodes\n")
-            writer.flush()
+            writer.write("${userData.key} has ${userData.value} ${if(userData.value > 1) "nodes" else "node"}\n")
         }
+        writer.flush()
     }
 
     private fun getBufferedInputStream(commandLine: CommandLine): CompressorInputStream {
