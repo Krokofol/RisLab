@@ -13,11 +13,15 @@ ext {
     versions = [
             log4j   :  "2.17.1",
             cli     :  "1.5.0",
-            compress:  "1.21"
+            compress:  "1.21",
+            stax    :  "1.0.1"
     ]
 }
 
 dependencies {
+    // https://mvnrepository.com/artifact/stax/stax-api
+    implementation "stax:stax-api:${versions.stax}"
+
     // https://mvnrepository.com/artifact/org.apache.logging.log4j/log4j
     implementation "org.apache.logging.log4j:log4j:${versions.log4j}"
 

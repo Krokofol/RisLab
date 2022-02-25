@@ -6,6 +6,9 @@ import org.apache.commons.cli.Options
 import org.apache.commons.compress.compressors.CompressorStreamFactory
 import java.io.*
 import java.lang.RuntimeException
+import javax.xml.stream.XMLEventReader
+import javax.xml.stream.XMLInputFactory
+import kotlin.RuntimeException
 
 object LabStarter {
     private const val DEFAULT_INPUT_FILE_NAME = "input.bz2"
@@ -18,23 +21,23 @@ object LabStarter {
         val commandLine = createCommandLine(args)
         val reader = getReader(commandLine)
         val writer = getWriter(commandLine)
-        var numberOfSymbolsToRead = getNumberOfSymbolsToRead(commandLine)
+        val numberOfSymbolsToRead = getNumberOfSymbolsToRead(commandLine)
 
-        var string: String? = null
-        do {
-            string?.let { println(it) }
-            string = reader.readLine()
-            string?.length?.let { numberOfSymbolsToRead -= it }
-        } while (string != null && string.isNotEmpty() && numberOfSymbolsToRead > 0)
-
-
+        while (reader.hasNext()) {
+            val event = reader.nextEvent()
+            if (event.isStartElement && event.asStartElement().name.localPart == "node") {
+                val startEvent = event.asStartElement()
+                val attributes = startEvent.attributes
+            }
+        }
     }
 
-    private fun getReader(commandLine: CommandLine): BufferedReader {
+    private fun getReader(commandLine: CommandLine): XMLEventReader {
         val fileInputStream = FileInputStream(commandLine.getOptionValue("i", DEFAULT_INPUT_FILE_NAME))
         val bufferedInputStream = BufferedInputStream(fileInputStream, CHAR_SIZE * DEFAULT_BUFFER_LENGTH)
         val input = CompressorStreamFactory().createCompressorInputStream(bufferedInputStream)
-        return BufferedReader(InputStreamReader(input))
+        return XMLInputFactory.newInstance().createXMLEventReader(input)
+            ?: throw RuntimeException("failed to create reader of xml file")
     }
 
     private fun getWriter(commandLine: CommandLine): BufferedWriter {
