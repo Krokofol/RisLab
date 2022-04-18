@@ -7,12 +7,11 @@ import com.krokofol.lab.service.ConnectionPool
 
 object NodeDAO {
     private var counter = 0
-    private val connection = ConnectionPool.getConnection()
-    connection.apply { autoCommit = false }
-    connection.prepareStatement("INSERT INTO node (id, lat, lon, username, uid, version, changeset, date_time) VALUES (?, ?, ?, ?, ?, ?, ?, ?)")
+    private val connection = ConnectionPool.getConnection().apply { autoCommit = false }
+    private val prepareStatement = connection.prepareStatement("INSERT INTO node (id, lat, lon, username, uid, version, changeset, date_time) VALUES (?, ?, ?, ?, ?, ?, ?, ?)")
 
     fun insertNode(node: Node) {
-        connection
+        prepareStatement
             .apply {
                 setLong(1, node.id.toLong())
                 setDouble(2, node.lat)
@@ -27,9 +26,9 @@ object NodeDAO {
                 if (counter < Properties.BATCH_SIZE) {
                     preparedStatement.addBatch()
                     counter++
-                    connection.commit()
                 } else {
-                    preparedStatement.executeLargeUpdate()
+                    preparedStatement.addBatch()
+                    preparedStatement.executeBatch()
                     counter = 0
                     connection.commit()
                 }

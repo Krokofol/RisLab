@@ -32,5 +32,5 @@ object Properties {
     /**
      * Количество записей для исполнения BATCH операции
      */
-    const val BATCH_SIZE = 1000
+    const val BATCH_SIZE = 10000
 }
