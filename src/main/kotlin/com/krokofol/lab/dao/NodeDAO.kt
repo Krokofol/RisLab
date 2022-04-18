@@ -8,11 +8,11 @@ import com.krokofol.lab.service.ConnectionPool
 object NodeDAO {
     private var counter = 0
     private val connection = ConnectionPool.getConnection()
+    connection.apply { autoCommit = false }
+    connection.prepareStatement("INSERT INTO node (id, lat, lon, username, uid, version, changeset, date_time) VALUES (?, ?, ?, ?, ?, ?, ?, ?)")
 
     fun insertNode(node: Node) {
         connection
-            .apply { autoCommit = false }
-            .prepareStatement("INSERT INTO node (id, lat, lon, username, uid, version, changeset, date_time) VALUES (?, ?, ?, ?, ?, ?, ?, ?)")
             .apply {
                 setLong(1, node.id.toLong())
                 setDouble(2, node.lat)
